@@ -1,73 +1,54 @@
 package Apotek.entity;
 
-public class Obat {
+import Apotek.contract.Sellable;
+
+import java.math.BigDecimal;
+
+public abstract class Obat implements Sellable {
     private final String nama;
-    private int stok;
-    private final double harga;
+    protected int stok;
+    private final BigDecimal harga;
 
-    private Obat(String nama, int stok, double harga) {
-        this.nama = nama;
-        this.stok = stok;
-        this.harga = harga;
-    }
-
-
-    public static Obat buat(String nama, int stok, double harga) {
+    protected Obat(String nama, double harga, int stok) {
         if (nama == null || nama.trim().isEmpty()) {
-            throw new IllegalArgumentException("nama obat tidak boleh kosong");
+            throw new IllegalArgumentException("nama tidak boleh kosong");
         }
-        if (stok < 0 ) {
-            throw new IllegalArgumentException("stok obat tidak boleh minus");
+        if (stok < 0 || harga < 0) {
+            throw new IllegalArgumentException("stok dan harga tidak boleh minus");
         }
-        if (harga < 0 ) {
-            throw new IllegalArgumentException("harga obat tidak boleh minus");
-        }
-        return new Obat(nama.trim(), stok, harga);
+        this.nama = nama.trim();
+        this.harga = BigDecimal.valueOf(harga);
+        this.stok = stok;
     }
 
-    public void kurangiStock (int qty){
-        if (qty <= 0) {
-            throw new IllegalArgumentException("qty obat tidak boleh minus");
-        }
-        if (qty > stok) {
-            throw new IllegalArgumentException("stok tidak cukup" + stok);
-        }
+    public final void kurangStock(int qty){
+        if (qty <= 0) throw new IllegalArgumentException("qty harus lebih besar dari nol");
+        if (qty > stok) throw new IllegalArgumentException("qty tidak bileh lebih besar dari stok");
         stok -= qty;
     }
 
-    public void tambahStock(int qty){
-        if (qty <= 0) {
-            throw new IllegalArgumentException("qty harus lebih dari 0");
-        }
+    public final void tambahStock(int qty){
+        if (qty <= 0) throw new IllegalArgumentException("qty harus > 0");
         stok += qty;
     }
 
-    public boolean stokHabis(){
-        return stok == 0;
-    }
-
-    public double hitungTotal(int qty){
-        return harga * qty;
-    }
+    // DEKLARASIKAN METHOD ABSTRAK DI SINI!
+    public abstract BigDecimal hitungHargaJual(int qty);
 
     public String getNama() {
         return nama;
     }
+    public int getStok() { return stok; }
+    public BigDecimal getHargaDasar() { return harga; }
 
-    public int getStok() {
-        return stok;
-    }
-
-    public void setStok(int stok) {
-        this.stok = stok;
-    }
-
-    public double getHarga() {
-        return harga;
-    }
 
     @Override
     public String toString() {
-        return String.format("%s (Stok: %d, Harga: Rp. %.0f)", nama, stok, harga);
+        return String.format("%s | Stok: %d | Harga Dasar: Rp. %.0f", nama, stok, harga);
     }
+
+    protected String formatRupiah(BigDecimal amount) {
+        return String.format("%,.0f", amount);
+    }
+
 }
